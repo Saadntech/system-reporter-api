@@ -1,8 +1,16 @@
 """FastAPI application entry point."""
 
+from ast import List
+
 from app.models import SystemReport
-from fastapi import FastAPI
-from app.collector import get_system_info, get_top_processes
+from fastapi import FastAPI,Depends
+from sqlalchemy.orm import Session
+
+
+from app.database import engine,Base,get_db
+from app import crud,models,schemas,collector, schemas
+
+Base.metadata.create_all(bind=engine)
 
 app=FastAPI(
     title="System Reporter API",
@@ -14,18 +22,38 @@ app=FastAPI(
 def root():
     return {
         "message": "System Reporter API",
-        "docs": "/docs",
-        "health": "/health",
+        "endpoints": ["/save","/history","/metrics"],
+    
     }
 
 @app.get("/health")
 def health():
     """Endpoint de santé de l'API."""
-    return {"status": "ok"}
+    return {"status": "ok","database":"connected"}
 
-@app.get("/metrics",response_model=SystemReport)
+
+@app.get("/metrics")
+
 def metrics():
-    """Retourne les metriques du systeme et les informations sur les processus."""
-    data=get_system_info()
-    data["top_processes"]=get_top_processes(5)
-    return data
+    """Metriques du systeme et des processus."""
+    return collector.get_system_info()
+
+
+@app.post("/save",response_model=schemas.ScanResponse)
+def save_scan(db:Session= Depends(get_db)):
+    """Scan system and save it in PostgresSQL database."""
+    data=collector.get_system_info()
+    top=collector.get_top_process()
+
+    scan_data=schemas.ScanCreate(
+        cpu_percent=data["cpu"]["usage_percent"],
+        memory_percent=data["memory"]["usage_percent"],
+        disk_percent=data["disk"]["usage_percent"],
+        top_process=top,
+    )   
+    return crud.create_scan(db=db,scan=scan_data)
+
+@app.get("/history",response_model=list[schemas.ScanResponse])
+def history(skip:int=0,limit:int=100,db:Session=Depends(get_db)):
+    """Get history of scans from database."""
+    return crud.get_scan(db=db,skip=skip,limit=limit)

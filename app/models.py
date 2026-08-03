@@ -1,7 +1,12 @@
 """Model donnes pour l'application."""
 
+from datetime import datetime, timezone
+from typing import List
+
 from pydantic import BaseModel #pydantic pour la validation des données
-from typing import List, Optional #typing pour les types de données
+from sqlalchemy import Column, DateTime, Float, Integer, String
+
+from app.database import Base
 
 class PlateformInfo(BaseModel):
     """Classe représentant une plateforme."""
@@ -44,3 +49,13 @@ class SystemReport(BaseModel):
     memory: MemoryInfo
     disk: DiskInfo
     top_processes: List[ProcessInfo]
+
+class Systemscan(Base):
+    """Classe représentant un scan du système."""
+    __tablename__ = "system_scan"
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    cpu_percent = Column(Float)
+    memory_percent = Column(Float)
+    disk_percent = Column(Float)
+    top_process = Column(String)
