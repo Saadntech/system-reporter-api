@@ -21,12 +21,12 @@ def get_latest_scan(db:Session):
 def get_stats(db: Session):
     """Calcule les statistiques sur tous les scans."""
     result = db.query(
-        func.avg(models.SystemScan.cpu_percent).label("avg_cpu"),
-        func.max(models.SystemScan.cpu_percent).label("max_cpu"),
-        func.min(models.SystemScan.cpu_percent).label("min_cpu"),
-        func.avg(models.SystemScan.memory_percent).label("avg_ram"),
-        func.max(models.SystemScan.memory_percent).label("max_ram"),
-        func.count(models.SystemScan.id).label("total_scans"),
+        func.avg(models.Systemscan.cpu_percent).label("avg_cpu"),
+        func.max(models.Systemscan.cpu_percent).label("max_cpu"),
+        func.min(models.Systemscan.cpu_percent).label("min_cpu"),
+        func.avg(models.Systemscan.memory_percent).label("avg_ram"),
+        func.max(models.Systemscan.memory_percent).label("max_ram"),
+        func.count(models.Systemscan.id).label("total_scans"),
     ).first()
     
     return {
@@ -45,7 +45,7 @@ def get_stats(db: Session):
 
 def delete_scan(db: Session, scan_id: int):
     """Supprime un scan par ID."""
-    scan = db.query(models.SystemScan).filter(models.SystemScan.id == scan_id).first()
+    scan = db.query(models.Systemscan).filter(models.Systemscan.id == scan_id).first()
     if scan:
         db.delete(scan)
         db.commit()
@@ -55,4 +55,4 @@ def delete_scan(db: Session, scan_id: int):
 
 def get_scan_by_id(db: Session, scan_id: int):
     """Récupère un scan spécifique."""
-    return db.query(models.SystemScan).filter(models.SystemScan.id == scan_id).first()
+    return db.query(models.Systemscan).filter(models.Systemscan.id == scan_id).first()

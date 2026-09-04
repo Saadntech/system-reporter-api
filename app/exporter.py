@@ -8,7 +8,7 @@ from app import crud
 
 def export_history_csv(db: Session):
     """Génère un CSV de l'historique."""
-    scans = crud.get_scans(db, limit=1000)
+    scans = crud.get_scan(db, limit=1000)
     
     output = io.StringIO()
     writer = csv.writer(output)
