@@ -70,3 +70,30 @@ Next steps I can take for you
 - Add Alembic and a migration example.
 
 If you'd like, I can now run the test suite and/or add a `docker-compose.override.yml` for development.
+
+Security and observability
+--------------------------
+
+- `POST /auth/token` issues a JWT using `AUTH_USERNAME`, `AUTH_PASSWORD`, and `JWT_SECRET`.
+- `POST /save` and `DELETE /history/{scan_id}` require a bearer token.
+- nginx applies API/authentication rate limits and security response headers.
+- Prometheus evaluates API availability and CPU, memory, and disk alerts.
+- Loki and Promtail collect Docker container logs for Grafana exploration.
+- Grafana's System Reporter dashboard includes API target status and firing incidents.
+
+Network topology
+---------------
+
+```mermaid
+flowchart LR
+	Client[Browser] --> Nginx[nginx :80]
+	Nginx --> API[FastAPI :8000]
+	Nginx --> Grafana[Grafana :3000]
+	Nginx --> Prom[Prometheus :9090]
+	API --> DB[(PostgreSQL)]
+	Prom --> API
+	Grafana --> Prom
+	Grafana --> Loki[Loki :3100]
+	Promtail[Promtail] --> Loki
+	Promtail -. Docker logs .-> Containers[Compose containers]
+```

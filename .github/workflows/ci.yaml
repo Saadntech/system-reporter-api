@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t system-reporter-db .
+        run: docker build -t system-reporter-db:ci .
 
       - name: Test Docker Compose
         run: |
@@ -77,3 +77,15 @@ jobs:
 
       - name: Audit Python dependencies
         run: pip-audit -r requirements.txt
+
+      - name: Build image for scan
+        run: docker build -t system-reporter-db:ci .
+
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: system-reporter-db:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH

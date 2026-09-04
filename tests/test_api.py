@@ -4,6 +4,12 @@ from app.main import app
 client = TestClient(app)
 
 
+def auth_headers():
+    response = client.post("/auth/token", json={"username": "admin", "password": "admin"})
+    assert response.status_code == 200
+    return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
@@ -17,7 +23,7 @@ def test_health():
 
 def test_save_and_history():
     # Sauvegarde un scan
-    save_resp = client.post("/save")
+    save_resp = client.post("/save", headers=auth_headers())
     assert save_resp.status_code == 200
     data = save_resp.json()
     assert "id" in data
@@ -32,7 +38,7 @@ def test_save_and_history():
 
 
 def test_stats_and_summary():
-    client.post("/save")
+    client.post("/save", headers=auth_headers())
 
     stats_resp = client.get("/stats")
     assert stats_resp.status_code == 200
@@ -44,12 +50,13 @@ def test_stats_and_summary():
 
 
 def test_export_and_delete():
-    save_resp = client.post("/save")
+    headers = auth_headers()
+    save_resp = client.post("/save", headers=headers)
     scan_id = save_resp.json()["id"]
 
     export_resp = client.get("/export/csv")
     assert export_resp.status_code == 200
     assert "ID,Timestamp,CPU %,RAM %,Disk %,Top Process" in export_resp.text
 
-    delete_resp = client.delete(f"/history/{scan_id}")
+    delete_resp = client.delete(f"/history/{scan_id}", headers=headers)
     assert delete_resp.status_code == 200

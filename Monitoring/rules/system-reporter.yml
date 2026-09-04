@@ -1,0 +1,38 @@
+groups:
+  - name: system-reporter
+    rules:
+      - alert: ApiTargetDown
+        expr: up{job="system-reporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: System Reporter API is unreachable
+          description: Prometheus cannot scrape the API metrics endpoint.
+
+      - alert: HighCpuUsage
+        expr: system_cpu_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage
+          description: CPU usage is above 80 percent for five minutes.
+
+      - alert: HighMemoryUsage
+        expr: system_memory_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High memory usage
+          description: Memory usage is above 80 percent for five minutes.
+
+      - alert: HighDiskUsage
+        expr: system_disk_percent > 85
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: High disk usage
+          description: Disk usage is above 85 percent for five minutes.

@@ -603,7 +603,30 @@ async function saveScan() {
     btn.style.pointerEvents = 'none';
     
     try {
-        await fetch(`${API_BASE}/save`, { method: 'POST' });
+        let token = localStorage.getItem('system_reporter_token');
+        if (!token) {
+            const username = prompt('Username:');
+            const password = prompt('Password:');
+            if (!username || !password) throw new Error('Authentication cancelled');
+            const login = await fetch(`${API_BASE}/auth/token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!login.ok) throw new Error('Invalid credentials');
+            token = (await login.json()).access_token;
+            localStorage.setItem('system_reporter_token', token);
+        }
+
+        const response = await fetch(`${API_BASE}/save`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.status === 401) {
+            localStorage.removeItem('system_reporter_token');
+            throw new Error('Session expired');
+        }
+        if (!response.ok) throw new Error('Error saving scan');
         await loadAll();
     } catch (e) {
         alert('Error saving scan');

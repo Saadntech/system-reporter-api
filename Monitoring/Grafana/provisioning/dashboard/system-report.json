@@ -112,6 +112,21 @@
         }
       ],
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+    },
+    {
+      "id": 6,
+      "title": "API Target Status",
+      "type": "stat",
+      "targets": [{"expr": "up{job=\"system-reporter\"}", "legendFormat": "API"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}]}},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16}
+    },
+    {
+      "id": 7,
+      "title": "Firing Incidents",
+      "type": "stat",
+      "targets": [{"expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)", "legendFormat": "Incidents"}],
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16}
     }
   ],
   "schemaVersion": 36,

@@ -19,6 +19,7 @@ from fastapi.responses import PlainTextResponse
 
 from app.exporter import export_history_csv
 from app.collector import get_processes_list
+from app.auth import authenticate, create_access_token, require_user
 Base.metadata.create_all(bind=engine)
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,6 +38,16 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.post("/auth/token")
+def login(credentials: schemas.LoginRequest):
+    if not authenticate(credentials.username, credentials.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {
+        "access_token": create_access_token(credentials.username),
+        "token_type": "bearer",
+    }
 
 @app.get("/")
 def root():
@@ -79,7 +90,7 @@ def current_metrics():
 
 
 @app.post("/save", response_model=schemas.ScanResponse)
-def save_scan(db: Session = Depends(get_db)):
+def save_scan(db: Session = Depends(get_db), _: str = Depends(require_user)):
     data = collector.get_system_info()
     top = collector.get_top_process()
     
@@ -169,7 +180,7 @@ def processes(n: int = Query(10, ge=1, le=50)):
 
 
 @app.delete("/history/{scan_id}")
-def delete_scan(scan_id: int, db: Session = Depends(get_db)):
+def delete_scan(scan_id: int, db: Session = Depends(get_db), _: str = Depends(require_user)):
     """Supprime un scan spécifique."""
     deleted = crud.delete_scan(db, scan_id)
     if not deleted:
