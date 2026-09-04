@@ -55,3 +55,24 @@ def get_top_process():
     
     processes.sort(key=lambda x: x['cpu'], reverse=True)
     return processes[0]["name"]
+
+
+def get_processes_list(n: int = 10):
+    """Retourne les N processus avec CPU + RAM."""
+    processes = []
+    
+    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+        try:
+            info = proc.info
+            if info['cpu_percent'] and info['cpu_percent'] > 0:
+                processes.append({
+                    "pid": info['pid'],
+                    "name": info['name'],
+                    "cpu_percent": round(info['cpu_percent'], 2),
+                    "memory_percent": round(info['memory_percent'] or 0, 2),
+                })
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    
+    processes.sort(key=lambda x: x['cpu_percent'], reverse=True)
+    return processes[:n]
