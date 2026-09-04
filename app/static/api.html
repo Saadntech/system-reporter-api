@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Reporter API Console</title>
+    <style>
+        :root { --bg: #10161c; --panel: #18232b; --line: #2b3a43; --text: #e8f0f2; --muted: #91a5ad; --accent: #42d3a5; --danger: #ff6b6b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: radial-gradient(circle at top right, #1d3a3b, var(--bg) 45%); color: var(--text); font: 15px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; min-height: 100vh; }
+        main { max-width: 1180px; margin: auto; padding: 32px 20px 48px; }
+        header { display: flex; justify-content: space-between; gap: 20px; align-items: end; border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 24px; }
+        h1 { margin: 0; font: 700 32px/1.1 Georgia, serif; letter-spacing: 0; color: var(--accent); }
+        .subtitle, .hint { color: var(--muted); margin: 8px 0 0; }
+        .status { color: var(--muted); white-space: nowrap; } .status strong { color: var(--accent); }
+        .layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 20px; }
+        section { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); padding: 20px; border-radius: 8px; }
+        h2 { margin: 0 0 16px; font: 700 19px Georgia, serif; }
+        .controls { display: grid; gap: 10px; }
+        button, input { font: inherit; border-radius: 5px; padding: 10px 12px; }
+        input { color: var(--text); background: #0f171c; border: 1px solid var(--line); width: 100%; }
+        button { color: #092019; background: var(--accent); border: 0; cursor: pointer; font-weight: 700; text-align: left; }
+        button:hover { filter: brightness(1.08); } button.secondary { color: var(--text); background: #23343c; }
+        button.danger { color: #fff; background: #8d3d46; }
+        .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .result { min-height: 430px; white-space: pre-wrap; overflow: auto; color: #c9e8df; background: #0b1115; border: 1px solid var(--line); border-radius: 5px; padding: 16px; margin: 0; }
+        .token { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; margin-top: 12px; }
+        @media (max-width: 760px) { header { display: block; } .status { margin-top: 16px; } .layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <div><h1>API Console</h1><p class="subtitle">System Reporter service control and diagnostics</p></div>
+        <div class="status">Session: <strong id="session-status">signed out</strong></div>
+    </header>
+
+    <div class="layout">
+        <div>
+            <section>
+                <h2>Authentication</h2>
+                <div class="controls">
+                    <input id="username" value="admin" autocomplete="username" placeholder="Username">
+                    <input id="password" value="admin" type="password" autocomplete="current-password" placeholder="Password">
+                    <div class="button-row"><button onclick="login()">Sign in</button><button class="secondary" onclick="logout()">Sign out</button></div>
+                </div>
+                <p class="token" id="token-status">No token stored</p>
+            </section>
+            <section style="margin-top: 20px;">
+                <h2>Read-only endpoints</h2>
+                <div class="controls">
+                    <button class="secondary" onclick="request('/health')">Health</button>
+                    <button class="secondary" onclick="request('/current')">Current metrics</button>
+                    <button class="secondary" onclick="request('/stats')">Statistics</button>
+                    <button class="secondary" onclick="request('/history')">Scan history</button>
+                    <button class="secondary" onclick="request('/alerts')">Alerts</button>
+                    <button class="secondary" onclick="request('/processes?n=10')">Top processes</button>
+                    <button class="secondary" onclick="request('/reports/summary')">Text summary</button>
+                    <button class="secondary" onclick="downloadCSV()">Download CSV</button>
+                </div>
+            </section>
+            <section style="margin-top: 20px;">
+                <h2>Protected actions</h2>
+                <div class="controls">
+                    <button onclick="saveScan()">Create scan</button>
+                    <input id="delete-id" type="number" min="1" placeholder="Scan ID to delete">
+                    <button class="danger" onclick="deleteScan()">Delete scan</button>
+                </div>
+                <p class="hint">Sign in first. Write actions require a JWT bearer token.</p>
+            </section>
+        </div>
+        <section>
+            <h2>Response</h2>
+            <pre class="result" id="result">Select an endpoint to view its response.</pre>
+        </section>
+    </div>
+</main>
+<script>
+const API_BASE = window.location.pathname.startsWith('/dashboard/') ? '/api' : '';
+let token = localStorage.getItem('system_reporter_token');
+const result = document.getElementById('result');
+
+function show(value) {
+    result.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+}
+function updateSession() {
+    const active = Boolean(token);
+    document.getElementById('session-status').textContent = active ? 'authenticated' : 'signed out';
+    document.getElementById('token-status').textContent = active ? 'JWT token stored in this browser' : 'No token stored';
+}
+async function call(path, options = {}) {
+    const headers = { ...(options.headers || {}) };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    const text = await response.text();
+    let body; try { body = JSON.parse(text); } catch { body = text; }
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}\n${typeof body === 'string' ? body : JSON.stringify(body, null, 2)}`);
+    return body;
+}
+async function request(path) { try { show(await call(path)); } catch (error) { show(error.message); } }
+async function login() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/token`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: username.value, password: password.value }) });
+        if (!response.ok) throw new Error('Invalid credentials');
+        token = (await response.json()).access_token; localStorage.setItem('system_reporter_token', token); updateSession(); show('Authentication successful.');
+    } catch (error) { show(error.message); }
+}
+function logout() { token = null; localStorage.removeItem('system_reporter_token'); updateSession(); show('Signed out.'); }
+async function saveScan() { await request('/save'); }
+async function deleteScan() { const id = document.getElementById('delete-id').value; if (!id) return show('Enter a scan ID first.'); await request(`/history/${id}`, { method: 'DELETE' }); }
+function downloadCSV() { window.open(`${API_BASE}/export/csv`, '_blank'); }
+updateSession();
+</script>
+</body>
+</html>
