@@ -3,7 +3,8 @@ FROM python:3.12-alpine
 WORKDIR /app
 
 COPY requirements.txt .
-RUN apk add --no-cache --virtual .build-deps \
+RUN apk upgrade --no-cache \
+	&& apk add --no-cache --virtual .build-deps \
 		gcc \
 		musl-dev \
 		linux-headers \
