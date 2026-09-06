@@ -9,48 +9,51 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --bg: #0b0f19;
-            --card: #151b2b;
-            --card-hover: #1a2235;
-            --border: #1e293b;
-            --text: #e2e8f0;
-            --text-muted: #64748b;
-            --accent: #38bdf8;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --bg: #edf1ed;
+            --card: #fbfcf8;
+            --card-hover: #f3f7ef;
+            --border: #d5ded3;
+            --text: #17221f;
+            --text-muted: #66756d;
+            --accent: #0d7762;
+            --accent-soft: #dceee7;
+            --success: #17845f;
+            --warning: #b87519;
+            --danger: #c7463d;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: Georgia, 'Times New Roman', serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            background-image: linear-gradient(rgba(13, 119, 98, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 119, 98, .045) 1px, transparent 1px);
+            background-size: 28px 28px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1480px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 30px 28px 40px;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            padding: 18px 0 22px;
+            border-bottom: 2px solid var(--text);
         }
 
         h1 {
-            font-size: 28px;
+            font-size: 34px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), #818cf8);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: 0;
+            color: var(--text);
         }
+
+        header p::before { content: 'LIVE / '; color: var(--accent); font-weight: 700; }
 
         .status {
             display: flex;
@@ -58,6 +61,9 @@
             gap: 8px;
             font-size: 14px;
             color: var(--text-muted);
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            text-transform: uppercase;
+            letter-spacing: .08em;
         }
 
         .status-dot {
@@ -84,14 +90,15 @@
         .card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(30, 55, 45, .06);
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
 
         .card:hover {
-            border-color: #334155;
-            transform: translateY(-2px);
+            border-color: var(--accent);
+            background: var(--card-hover);
         }
 
         .card-header {
@@ -102,11 +109,12 @@
         }
 
         .card-title {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: .12em;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
         }
 
         .card-icon {
@@ -116,22 +124,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
+            border: 1px solid var(--border);
         }
 
-        .icon-cpu { background: rgba(56, 189, 248, 0.1); }
-        .icon-ram { background: rgba(168, 85, 247, 0.1); }
-        .icon-disk { background: rgba(34, 197, 94, 0.1); }
-        .icon-process { background: rgba(245, 158, 11, 0.1); }
+        .icon-cpu { background: #dceee7; }
+        .icon-ram { background: #e5e3f5; }
+        .icon-disk { background: #e5efcf; }
+        .icon-process { background: #f8e7c9; }
 
         .metric-value {
-            font-size: 36px;
+            font-size: 40px;
             font-weight: 700;
             margin: 8px 0;
         }
 
         .metric-unit {
-            font-size: 16px;
+            font-size: 14px;
             color: var(--text-muted);
             font-weight: 400;
         }
@@ -139,7 +148,7 @@
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: rgba(255,255,255,0.05);
+            background: #e6ebe5;
             border-radius: 4px;
             overflow: hidden;
             margin-top: 12px;
@@ -156,7 +165,7 @@
             align-items: center;
             gap: 6px;
             padding: 6px 12px;
-            border-radius: 20px;
+            border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
         }
@@ -173,14 +182,14 @@
         }
 
         button {
-            background: linear-gradient(135deg, var(--accent), #6366f1);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
+            background: var(--text);
+            color: #f5faf4;
+            border: 1px solid var(--text);
+            padding: 11px 18px;
+            border-radius: 5px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -189,16 +198,19 @@
 
         button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25);
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 6px 16px rgba(13, 119, 98, .2);
         }
 
         button.secondary {
-            background: var(--card);
+            color: var(--text);
+            background: transparent;
             border: 1px solid var(--border);
         }
 
         button.secondary:hover {
-            background: var(--card-hover);
+            background: var(--accent-soft);
             box-shadow: none;
         }
 
@@ -237,7 +249,7 @@
 
         .process-name {
             font-family: 'Courier New', monospace;
-            background: rgba(56, 189, 248, 0.1);
+            background: var(--accent-soft);
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 13px;
@@ -254,9 +266,9 @@
             border: 1px solid transparent;
         }
 
-        .alert-box.ok { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2); }
-        .alert-box.warning { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
-        .alert-box.danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
+        .alert-box.ok { background: #e2f1e8; border-color: #b6d7c2; }
+        .alert-box.warning { background: #fbefd8; border-color: #e8cc91; }
+        .alert-box.danger { background: #f9e1df; border-color: #e5aaa5; }
 
         .last-update {
             text-align: center;
@@ -283,6 +295,7 @@
             <div class="status">
                 <div class="status-dot"></div>
                 <span id="conn-status">Connected</span>
+                <button class="secondary" onclick="logout()" style="padding: 7px 12px; margin-left: 8px;">Sign out</button>
             </div>
         </header>
 
@@ -396,6 +409,10 @@
 const API_BASE = window.location.pathname.startsWith('/dashboard/') ? '/api' : '';
 let historyChart = null;
 let historyData = [];
+
+if (!localStorage.getItem('system_reporter_token')) {
+    window.location.replace('/login/');
+}
 
 async function api(endpoint) {
     try {
@@ -634,6 +651,11 @@ async function saveScan() {
         btn.style.opacity = '1';
         btn.style.pointerEvents = 'all';
     }
+}
+
+function logout() {
+    localStorage.removeItem('system_reporter_token');
+    window.location.replace('/login/');
 }
 
 function downloadCSV() {

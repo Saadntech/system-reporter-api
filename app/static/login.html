@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in | System Reporter</title>
+    <style>
+        :root { --bg: #0d1519; --panel: #18252b; --line: #30424a; --text: #edf7f4; --muted: #9eb1b0; --accent: #42d3a5; --danger: #ff7777; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; color: var(--text); background: radial-gradient(circle at 85% 10%, #244747, var(--bg) 48%); font: 15px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+        main { width: min(100%, 420px); }
+        .brand { margin-bottom: 22px; } h1 { margin: 0; color: var(--accent); font: 700 34px/1.1 Georgia, serif; } .brand p { color: var(--muted); margin: 8px 0 0; }
+        form { display: grid; gap: 14px; padding: 24px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 60px #0005; }
+        label { color: var(--muted); font-size: 13px; } input { width: 100%; margin-top: 6px; padding: 11px 12px; color: var(--text); background: #0b1215; border: 1px solid var(--line); border-radius: 5px; font: inherit; } input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+        button { margin-top: 4px; padding: 12px; color: #08221a; background: var(--accent); border: 0; border-radius: 5px; cursor: pointer; font: 700 15px inherit; } button:disabled { opacity: .65; cursor: wait; }
+        #message { min-height: 22px; margin: 0; color: var(--danger); font-size: 13px; }
+    </style>
+</head>
+<body>
+<main>
+    <div class="brand"><h1>System Reporter</h1><p>Secure monitoring dashboard</p></div>
+    <form id="login-form">
+        <label>Username<input id="username" name="username" value="admin" autocomplete="username" required></label>
+        <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required></label>
+        <button id="submit" type="submit">Sign in</button>
+        <p id="message" role="alert"></p>
+    </form>
+</main>
+<script>
+const apiBase = window.location.pathname.startsWith('/login/') ? '/api' : '';
+const form = document.getElementById('login-form');
+const message = document.getElementById('message');
+const submit = document.getElementById('submit');
+
+if (localStorage.getItem('system_reporter_token')) window.location.replace('/dashboard/dashboard.html');
+
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    submit.disabled = true;
+    message.textContent = '';
+    try {
+        const response = await fetch(`${apiBase}/auth/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username.value, password: password.value })
+        });
+        if (!response.ok) throw new Error('Invalid username or password.');
+        const data = await response.json();
+        localStorage.setItem('system_reporter_token', data.access_token);
+        window.location.replace('/dashboard/');
+    } catch (error) {
+        message.textContent = error.message;
+        submit.disabled = false;
+    }
+});
+</script>
+</body>
+</html>
